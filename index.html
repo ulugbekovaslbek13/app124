@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+    <meta charset="UTF-8">
+    <title>Smart Inventory | Boshqaruv Tizimi</title>
+    <style>
+        :root { --primary: #3b82f6; --bg: #0f172a; --card: #1e293b; --text: #f8fafc; }
+        body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', sans-serif; padding: 20px; }
+        .container { max-width: 1000px; margin: 0 auto; }
+        .stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-bottom: 30px; }
+        .stat-card { background: var(--card); padding: 20px; border-radius: 12px; border-top: 4px solid var(--primary); text-align: center; }
+        .stat-card h3 { margin: 0; font-size: 14px; color: #94a3b8; }
+        .stat-card p { margin: 10px 0 0; font-size: 24px; font-weight: bold; }
+
+        .form-box { background: var(--card); padding: 20px; border-radius: 12px; margin-bottom: 30px; display: flex; gap: 10px; flex-wrap: wrap; }
+        input { background: #0f172a; border: 1px solid #334155; padding: 12px; border-radius: 8px; color: white; flex: 1; min-width: 150px; outline: none; }
+        input:focus { border-color: var(--primary); }
+        button { background: var(--primary); color: white; border: none; padding: 12px 25px; border-radius: 8px; font-weight: bold; cursor: pointer; transition: 0.3s; }
+        button:hover { opacity: 0.8; }
+
+        table { width: 100%; border-collapse: collapse; background: var(--card); border-radius: 12px; overflow: hidden; }
+        th, td { padding: 15px; text-align: left; border-bottom: 1px solid #334155; }
+        th { background: #334155; color: var(--primary); }
+        .delete-btn { background: #ef4444; padding: 5px 10px; font-size: 12px; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>Warehouse Inventory System</h2>
+    
+    <div class="stats">
+        <div class="stat-card">
+            <h3>Jami Mahsulotlar</h3>
+            <p id="totalItems">0</p>
+        </div>
+        <div class="stat-card">
+            <h3>Ombordagi Miqdor</h3>
+            <p id="totalQty">0</p>
+        </div>
+        <div class="stat-card">
+            <h3>Jami Qiymat (UZS)</h3>
+            <p id="totalValue">0</p>
+        </div>
+    </div>
+
+    <div class="form-box">
+        <input type="text" id="pName" placeholder="Mahsulot nomi">
+        <input type="number" id="pPrice" placeholder="Narxi">
+        <input type="number" id="pQty" placeholder="Soni">
+        <button onclick="addProduct()">QO'SHISH</button>
+    </div>
+
+    <table id="inventoryTable">
+        <thead>
+            <tr>
+                <th>Nomi</th>
+                <th>Narxi</th>
+                <th>Soni</th>
+                <th>Jami</th>
+                <th>Amal</th>
+            </tr>
+        </thead>
+        <tbody id="inventoryBody"></tbody>
+    </table>
+</div>
+
+<script>
+    let inventory = JSON.parse(localStorage.getItem('inventoryData')) || [];
+
+    function updateUI() {
+        const body = document.getElementById('inventoryBody');
+        body.innerHTML = "";
+        let totalVal = 0, totalQty = 0;
+
+        inventory.forEach((item, index) => {
+            let rowTotal = item.price * item.qty;
+            totalVal += rowTotal;
+            totalQty += parseInt(item.qty);
+
+            body.innerHTML += `
+                <tr>
+                    <td>${item.name}</td>
+                    <td>${item.price.toLocaleString()}</td>
+                    <td>${item.qty}</td>
+                    <td>${rowTotal.toLocaleString()}</td>
+                    <td><button class="delete-btn" onclick="deleteItem(${index})">O'chirish</button></td>
+                </tr>
+            `;
+        });
+
+        document.getElementById('totalItems').innerText = inventory.length;
+        document.getElementById('totalQty').innerText = totalQty;
+        document.getElementById('totalValue').innerText = totalVal.toLocaleString();
+        localStorage.setItem('inventoryData', JSON.stringify(inventory));
+    }
+
+    function addProduct() {
+        const name = document.getElementById('pName').value;
+        const price = parseFloat(document.getElementById('pPrice').value);
+        const qty = parseInt(document.getElementById('pQty').value);
+
+        if (name && price > 0 && qty > 0) {
+            inventory.push({ name, price, qty });
+            updateUI();
+            document.getElementById('pName').value = "";
+            document.getElementById('pPrice').value = "";
+            document.getElementById('pQty').value = "";
+        } else {
+            alert("Ma'lumotlarni to'liq kiriting!");
+        }
+    }
+
+    function deleteItem(index) {
+        inventory.splice(index, 1);
+        updateUI();
+    }
+
+    updateUI();
+</script>
+
+</body>
+</html>
